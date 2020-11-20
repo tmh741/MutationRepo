@@ -7,7 +7,7 @@ library(reshape2)
 library(gridExtra)
 
 data = readRDS("lung_sbs_matrix.rds")
-store = as.matrix(t(data[,1]))
+store = data[,1:10]
 range(store)
 
 model = "
@@ -45,8 +45,8 @@ N = nrow(store)
 S = ncol(store)
 K = 5
 y = store
-a = 1000
-b = 0.00001
+a = 1
+b = 1
 a0= 1/K
 
 please = rstan::stan(model_code=model,
