@@ -1,6 +1,9 @@
 library(rstan)
 library(topicmodels)
 library(tm)
+library(tidyverse)
+library(reshape2)
+library(gridExtra)
 
 data("AssociatedPress", package = "topicmodels")
 dtm = AssociatedPress[1:50,]
@@ -44,13 +47,14 @@ model {
 }
 "
 
-data = list(K = 2,
+
+data = list(K = 5,
             V = dim(dtm)[2],
             M = dim(dtm)[1],
             N = sum(dtm$v),
             w = rep(dtm$j,dtm$v),
             doc = rep(dtm$i,dtm$v),
-            alpha = rep(50/2,2),
+            alpha = rep(50/5,5),
             beta = rep(1,dim(dtm)[2]))
 
 stan.model <- stan_model(model_code = lda)
@@ -77,11 +81,15 @@ displayvalues$dim2 = as.numeric(displayvalues$dim2)
 
 phimat = dcast(displayvalues %>% filter(variable=="phi"), dim1 ~ dim2)[,-1]
 colnames(phimat) = paste("doc",1:ncol(phimat),sep="")
-rownames(phimat) = paste("topic",1:2,sep="")
+rownames(phimat) = paste("topic",1:5,sep="")
 displayphi = data.frame(t(phimat),names=colnames(phimat))
 
 p1 = ggplot(displayphi) + aes(x=names,y=topic1) + geom_bar(stat="identity") + theme(axis.text.x = element_blank(),legend.position="none") + xlab("") + ylab("Signature 1")
 p2 = ggplot(displayphi) + aes(x=names,y=topic2) + geom_bar(stat="identity") + theme(axis.text.x = element_blank(),legend.position="none") + xlab("") + ylab("Signature 2")
+p3 = ggplot(displayphi) + aes(x=names,y=topic3) + geom_bar(stat="identity") + theme(axis.text.x = element_blank(),legend.position="none") + xlab("") + ylab("Signature 3")
+p4 = ggplot(displayphi) + aes(x=names,y=topic4) + geom_bar(stat="identity") + theme(axis.text.x = element_blank(),legend.position="none") + xlab("") + ylab("Signature 4")
+p5 = ggplot(displayphi) + aes(x=names,y=topic5) + geom_bar(stat="identity") + theme(axis.text.x = element_blank(),legend.position="none") + xlab("") + ylab("Signature 5")
 
-grid.arrange(p1,p2,ncol=1)
+
+grid.arrange(p1,p2,p3,p4,p5,ncol=1)
 

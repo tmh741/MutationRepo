@@ -7,7 +7,7 @@ library(reshape2)
 library(gridExtra)
 
 data = readRDS("lung_sbs_matrix.rds")
-store = data[,1:10]
+store = t(data[,1:10])
 range(store)
 
 model = "
@@ -53,7 +53,7 @@ S = ncol(store)
 K = 5
 y = store
 a = 1000
-b = 0.00001
+b = 0.0001
 alpha= 1/K
 
 please = rstan::stan(model_code=model,
@@ -66,17 +66,17 @@ for(i in 1:ncol(vals2)){
   displayval2$names[i] = colnames(vals2)[i]
   displayval2$value[i] = median(vals2[,i])
   displayval2$madsd[i] = mad(vals2[,i])
-  displayvalues$dim1[i] = gsub("[^0-9.-]","",strsplit(colnames(vals2)[i],",")[[1]])[1]
-  displayvalues$dim2[i] = gsub("[^0-9.-]","",strsplit(colnames(vals2)[i],",")[[1]])[2]
-  displayvalues$variable[i] = gsub("[^a-zA-Z]","",colnames(vals2)[i])
+  displayval2$dim1[i] = gsub("[^0-9.-]","",strsplit(colnames(vals2)[i],",")[[1]])[1]
+  displayval2$dim2[i] = gsub("[^0-9.-]","",strsplit(colnames(vals2)[i],",")[[1]])[2]
+  displayval2$variable[i] = gsub("[^a-zA-Z]","",colnames(vals2)[i])
 }
-displayvalues$dim1 = as.numeric(displayvalues$dim1)
-displayvalues$dim2 = as.numeric(displayvalues$dim2)
+displayval2$dim1 = as.numeric(displayval2$dim1)
+displayval2$dim2 = as.numeric(displayval2$dim2)
 
 
-thetamatrix = dcast(displayvalues %>% filter(variable=="theta"), dim1 ~ dim2)[,-1]
+thetamatrix = dcast(displayval2 %>% filter(variable=="beta"), dim1 ~ dim2)[,-1]
 colnames(thetamatrix) = paste("sig",1:ncol(thetamatrix),sep="")
-thetamatrix$names = rownames(store)
+thetamatrix$names = colnames(store)
 thetamatrix$group = thetamatrix$names %>% strsplit("_") %>% sapply("[",1)
 
 p1 = ggplot(thetamatrix) + aes(x=names,y=sig1,fill=group) + geom_bar(stat="identity") + theme(axis.text.x = element_blank(),legend.position="none") + xlab("") + ylab("Signature 1")

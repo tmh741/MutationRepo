@@ -1,7 +1,13 @@
 library(rstan)
+library(bayesplot)
+library(ggplot2)
+library(rstanarm)
+library(tidyverse)
+library(reshape2)
+library(gridExtra)
 
 data = readRDS("lung_sbs_matrix.rds")
-counts = as.matrix(data[,1])
+counts = as.matrix(data[,1:10])
 
 jonathanmodel = "
 data {
@@ -65,6 +71,7 @@ model {
 }
 "
 
+K=5
 a=1000
 alpha=1/K
 a0=2
@@ -75,8 +82,7 @@ J = dim(counts)[2]
 
 test1 = rstan::stan(model_code=jonathanmodel,
                       data = list(I=I, J=J, K=K, X=counts, a=a, alpha=alpha,lik_power=lik_power),
-                    iter=10000)
-
+                    iter=6000)
 stan_rhat(test1)
 
 vals2= as.matrix(test1)
